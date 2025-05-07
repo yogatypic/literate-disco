@@ -1,65 +1,30 @@
-````bash
-#!/usr/bin/env bash
-set -euo pipefail
+services:
+  - type: static
+    name: literate-disco-front
+    env: node
+    plan: free
+    branch: main
+    repo: https://github.com/yogatypic/literate-disco
+    rootDir: .
+    buildCommand: "npm install && npm run build"
+    staticPublishPath: build
+    envVars:
+      - key: VITE_API_URL
+        value: "https://prompt-ultime.onrender.com"
 
-# Ce script doit être lancé à la racine de literate-disco (où se trouve render.yaml)
-if [[ ! -f render.yaml ]]; then
-  echo "❌ render.yaml introuvable. Placez-vous à la racine du dépôt literate-disco."
-  exit 1
-fi
-
-# Vérifier la clé API
-if [[ -z "${RENDER_API_KEY:-}" ]]; then
-  echo "❌ Veuillez exporter RENDER_API_KEY avant de lancer le script."
-  exit 1
-fi
-
-REPO="https://github.com/yogatypic/literate-disco.git"
-BRANCH="main"
-BLUEPRINT_NAME="literate-disco"
-
-# 1) Créer ou récupérer le Blueprint
-echo "🔍 Création ou récupération du Blueprint '$BLUEPRINT_NAME'…"
-# Capturer la réponse et le code HTTP
-HTTP_CODE=$(curl -sS -o bp_response.json -w "%{http_code}" \
-  -H "Authorization: Bearer $RENDER_API_KEY" \
-  -H "Content-Type: application/json" \
-  -X POST https://api.render.com/v1/blueprints \
-  -d "{\"name\":\"$BLUEPRINT_NAME\",\"repo\":\"$REPO\",\"branch\":\"$BRANCH\"}")
-
-if [[ "$HTTP_CODE" -ne 200 && "$HTTP_CODE" -ne 201 ]]; then
-  echo "❌ Échec de la création/récupération du Blueprint (HTTP $HTTP_CODE)"
-  echo "Body:" && cat bp_response.json
-  exit 1
-fi
-
-BLUEPRINT_ID=$(jq -r .id bp_response.json)
-echo "→ Blueprint ID = $BLUEPRINT_ID"
-
-# 2) Synchroniser le Blueprint (apply)
-echo "🚀 Synchronisation du Blueprint…"
-HTTP_CODE=$(curl -sS -o sync_response.json -w "%{http_code}" \
-  -H "Authorization: Bearer $RENDER_API_KEY" \
-  -X POST https://api.render.com/v1/blueprints/$BLUEPRINT_ID/syncs \
-  -d "{}")
-
-if [[ "$HTTP_CODE" -ne 200 && "$HTTP_CODE" -ne 201 ]]; then
-  echo "❌ Échec de la synchronisation (HTTP $HTTP_CODE)"
-  echo "Body:" && cat sync_response.json
-  exit 1
-fi
-
-SYNC_ID=$(jq -r .id sync_response.json)
-echo "→ Sync déclenchée, ID = $SYNC_ID"
-
-# 3) Afficher le statut des dernières syncs
-echo "ℹ️ Statut des dernières synchronisations :"
-curl -sS \
-  -H "Authorization: Bearer $RENDER_API_KEY" \
-  https://api.render.com/v1/blueprints/$BLUEPRINT_ID/syncs | jq .
-
-echo "✅ Script terminé."
-```}]}
-
-````
+  - type: web_service
+    name: prompt-ultime-api
+    env: python
+    plan: free
+    rootDir: src
+    buildCommand: |
+      if [ ! -x /opt/render/project/poetry/bin/poetry ]; then
+        curl -sSL https://install.python-poetry.org | python3 -
+      fi
+      export PATH="/opt/render/project/poetry/bin:$PATH" && poetry install --no-dev
+    startCommand: |
+      export PATH="/opt/render/project/poetry/bin:$PATH" && poetry run uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
 
