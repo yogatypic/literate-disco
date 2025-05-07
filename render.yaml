@@ -1,17 +1,17 @@
-services:
-  # Front‑end React/Vite déployé en site statique
-  - type: web
-    runtime: static
-    name: literate-disco-front
-    plan: starter
-    branch: main
-    repo: https://github.com/yogatypic/literate-disco
-    rootDir: .
-    buildCommand: "npm install && npm run build"
-    staticPublishPath: build
-    envVars:
-      - key: VITE_API_URL
-        value: "https://prompt-ultime.onrender.com"
+ services:
+   - type: web
+     runtime: static
+     name: literate-disco-front
+-    plan: starter
+     branch: main
+     repo: https://github.com/yogatypic/literate-disco
+     rootDir: .
+     buildCommand: "npm install && npm run build"
+     staticPublishPath: build
+     envVars:
+       - key: VITE_API_URL
+         value: "https://prompt-ultime.onrender.com"
+
 
   # Back‑end Python/FastAPI déployé en Web Service
   - type: web
