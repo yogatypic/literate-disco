@@ -4,13 +4,12 @@ import { useState } from "react";
 import MatrixTranslator from "@/components/MatrixTranslator";
 
 export default function Home() {
-  // 1️⃣ état pour savoir où on en est : "choose" (écran de choix) ou "translate"
+  // 1️⃣ On démarre sur l'écran de choix
   const [modePage, setModePage] = useState<"choose" | "translate">("choose");
-
-  // 2️⃣ état pour mémoriser la pilule choisie ("immersive" = rouge, "simple" = bleue)
+  // 2️⃣ On stocke la pilule choisie
   const [initialMode, setInitialMode] = useState<"immersive" | "simple">("simple");
 
-  // 🛑 Écran de choix
+  // 3️⃣ Si on est dans le mode “choose”, on affiche les deux boutons
   if (modePage === "choose") {
     return (
       <div className="p-8 text-center">
@@ -18,28 +17,26 @@ export default function Home() {
         <button
           className="m-2 px-6 py-3 bg-red-600 text-white rounded"
           onClick={() => {
-            setInitialMode("immersive");    // pilule rouge
-            setModePage("translate");       // passer à la traduction
+            setInitialMode("immersive");   // Pilule rouge → mode immersif
+            setModePage("translate");      // on passe à l'écran traducteur
           }}
         >
-          Pilule rouge
+          Pilule rouge (Immersive)
         </button>
         <button
           className="m-2 px-6 py-3 bg-blue-600 text-white rounded"
           onClick={() => {
-            setInitialMode("simple");       // pilule bleue
-            setModePage("translate");       // passer à la traduction
+            setInitialMode("simple");      // Pilule bleue → mode simple
+            setModePage("translate");
           }}
         >
-          Pilule bleue
+          Pilule bleue (Simple)
         </button>
       </div>
     );
   }
 
-  // ✅ Écran de traduction
-  return (
-    <MatrixTranslator mode={initialMode} />
-  );
+  // 4️⃣ Sinon, on affiche le traducteur en lui passant initialMode
+  return <MatrixTranslator initialMode={initialMode} />;
 }
 
