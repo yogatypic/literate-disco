@@ -1,0 +1,21 @@
+```yaml
+# render.yaml à placer à la racine du dépôt (même niveau que package.json)
+# Définit 2 services : front (static site) et back (API Python)
+
+services:
+  - type: static_site
+    name: literate-disco-front
+    env: node
+    plan: free
+    branch: main
+    repo: https://github.com/yogatypic/literate-disco
+    # Assurer que le build s'exécute à la racine où se trouve package.json
+    rootDir: .
+    rootDir: .
+    buildCommand: "npm install && npm run build"
+    staticPublishPath: build
+    envVars:
+      - key: VITE_API_URL
+        value: "https://prompt-ultime.onrender.com"
+```
+
